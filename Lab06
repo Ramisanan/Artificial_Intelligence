@@ -1,0 +1,162 @@
+# CSE422
+import pandas as pd
+import numpy as np
+import re
+import string
+import matplotlib.pyplot as plt
+import seaborn as sns
+import sklearn
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+mushroom_classification = pd.read_csv('/content/mushroom edibility classification dataset.csv')
+mushroom_classification.head(5)
+
+mushroom_classification['class'].unique()
+
+mushroom_classification['bruises'].unique()
+
+#encoding
+enc = LabelEncoder()
+mushroom_classification['class'] = enc.fit_transform(mushroom_classification['class'])
+mushroom_classification['bruises'] = enc.fit_transform(mushroom_classification['bruises'])
+
+
+mushroom_classification.shape
+
+mushroom_classification.isnull().sum()
+
+# dropping unnecessary column and row
+mushroom_classification = mushroom_classification.dropna(axis=0, subset=['cap-shape', 'cap-color'])
+mushroom_classification = mushroom_classification.drop(['veil-type'], axis=1)
+
+mushroom_classification.isnull().sum()
+
+mushroom_classification = mushroom_classification.drop(['stalk-shape', 'stalk-root', 'stalk-surface-above-ring', 'stalk-surface-below-ring', 'stalk-color-above-ring', 'stalk-color-below-ring'], axis=1)
+mushroom_classification.shape
+
+mushroom_classification_cor = mushroom_classification.corr()
+
+from sklearn.preprocessing import MinMaxScaler
+scale = MinMaxScaler()
+scale.fit(mushroom_classification)
+scale = scale.transform(mushroom_classification)
+scale
+
+from sklearn.model_selection import train_test_split
+an = pd.DataFrame(mushroom_classification['class'])
+x_train, x_test, y_train, y_test = train_test_split(mushroom_classification, mushroom_classification['class'], test_size=0.2, random_state=42, stratify=an)
+
+
+x = mushroom_classification.iloc[:,1:13]
+y = mushroom_classification.iloc[:, 1]
+
+
+# Support Vector Machine (SVM) Classifier
+from sklearn.svm import SVC
+s = SVC(kernel="linear")
+s.fit(x_train, y_train)
+predict_s1=s.predict(x_test)
+s_score1=accuracy_score(predict_s1,y_test)*100
+print("Training accuracy of the model is {:.2f}".format(s.score(x_train, y_train)))
+print("Testing accuracy of the model is {:.2f}".format(s.score(x_test, y_test)))
+
+predictions = s.predict(x_test)
+print(predictions)
+
+# Neural Network Classifier
+from sklearn.neural_network import MLPClassifier
+n =MLPClassifier(hidden_layer_sizes=(7), activation="relu", max_iter=10000)
+n.fit(x_train, y_train)
+predict_n1=n.predict(x_test)
+n_score1=accuracy_score(predict_n1,y_test)*100
+print("The Training accuracy of the model is {:.2f}".format(n.score(x_train, y_train)))
+print("The Testing accuracy of the model is {:.2f}".format(n.score(x_test, y_test)))
+
+predictions = n.predict(x_test)
+print(predictions)
+
+#  Random Forest Classifier
+from sklearn.ensemble import RandomForestClassifier
+randomfc = RandomForestClassifier(n_estimators=50)
+randomfc.fit(x_train, y_train)
+predict_randomfc1=randomfc.predict(x_test)
+randomfc_score = accuracy_score(predict_randomfc1,y_test)*100
+print("The Training accuracy of the model is {:.2f}".format(randomfc.score(x_train, y_train)))
+print("The Testing accuracy of the model is {:.2f}".format(randomfc.score(x_test, y_test)))
+
+predictions = randomfc.predict(x_test)
+print(predictions)
+
+from sklearn.preprocessing import StandardScaler
+scaler= StandardScaler()
+
+
+mushroom_classification.shape
+
+from sklearn.decomposition import PCA
+pca=PCA(n_components=5)
+data=pca.fit_transform(scaler.fit_transform(x))
+cols=["Pp"+str(i) for i in range(1,6)]
+reduced_df=pd.DataFrame(data=data, columns=cols)
+reduced_df["target"]=y
+reduced_df.head()
+
+# Again using classifier on the reduced dataset
+x_new=reduced_df.iloc[:,0:5]
+print(x_new)
+
+x_train, x_test, y_train, y_test = train_test_split(x_new, y, stratify=y, test_size=0.20)
+
+# Support Vector Classifier
+svc = SVC(kernel="linear")
+svc.fit(x_train, y_train)
+predict_svc2=svc.predict(x_test)
+svc_score2=accuracy_score(predict_svc2,y_test)*100
+print("Training accuracy of the model is {:.2f}".format(svc.score(x_train, y_train)))
+print("Testing accuracy of the model is {:.2f}".format(svc.score(x_test, y_test)))
+
+# Neural Network Classifier
+nnc=MLPClassifier(hidden_layer_sizes=(7), activation="relu", max_iter=10000)
+nnc.fit(x_train, y_train)
+predict_nnc2=nnc.predict(x_test)
+nnc_score2=accuracy_score(predict_nnc2,y_test)*100
+print("The Training accuracy of the model is {:.2f}".format(nnc.score(x_train, y_train)))
+print("The Testing accuracy of the model is {:.2f}".format(nnc.score(x_test, y_test)))
+
+# Random Forest
+rfc = RandomForestClassifier(n_estimators=50)
+rfc.fit(x_train, y_train)
+predict_rfc2=rfc.predict(x_test)
+rfc_score2=accuracy_score(predict_rfc2,y_test)*100
+print("The Training accuracy of the model is {:.2f}".format(rfc.score(x_train, y_train)))
+print("The Testing accuracy of the model is {:.2f}".format(rfc.score(x_test, y_test)))
+
+import matplotlib
+import matplotlib.pyplot as plt
+
+labels = ['Support Vector', 'Neural Network', 'Random Forest']
+before_reduce = [s_score1, n_score1, randomfc_score,]
+after_reduce = [svc_score2, nnc_score2, rfc_score2]
+
+x = np.arange(len(labels))  
+width = 0.35  
+
+fig, ax = plt.subplots(figsize=(6, 7))
+rects1 = ax.bar(x - width/2, before_reduce, width, label='Before head',)
+rects2 = ax.bar(x + width/2, after_reduce, width, label='After head')
+
+ax.set_ylabel('Scores%')
+ax.set_title('Accuracy of different classifiers')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.legend(loc='lower right')
+
+autolabel(rects1)
+autolabel(rects2)
+
+fig.tight_layout()
+
+plt.show()
