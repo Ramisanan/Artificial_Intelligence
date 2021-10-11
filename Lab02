@@ -1,0 +1,158 @@
+# CSE422
+# 422Lab_2(GA)
+import numpy as np
+import random
+
+
+def find_fitness(i, num):
+    max = ((num * (num - 1)) // 2)
+
+    c1 = 0
+    for queen in i:
+        count = 0
+        for another_queen in i:
+            if queen == another_queen:
+                count = count + 1
+        c1 = c1 + (count - 1)
+
+    c1 = c1 / 2
+
+    left_diagonal = np.zeros(2 * num)
+    right_diagonal = np.zeros(2 * num)
+
+    for var in range(0, num):
+        left_diagonal[var + i[var] - 1] = left_diagonal[var + i[var] - 1] + 1
+        right_diagonal[num - var + i[var] - 2] = right_diagonal[num - var + i[var] - 2] + 1
+
+    c2 = 0
+    x = left_diagonal
+    y = right_diagonal
+    m = num - 1
+    for var in range(0, 2 * m):
+        count = 0
+        if x[var] > 1:
+            count = count + x[var] - 1
+        if y[var] > 1:
+            count = count + y[var] - 1
+        c2 = c2 + (count / (num - abs(var - num + 1)))
+
+    p = c1 + c2
+    individual_fitness_score = (max - p)
+
+    return individual_fitness_score
+
+
+num_input = int(input("Number of queen: "))
+population_input = int(input("initial population: "))
+
+
+def fitness(p, n):
+    fitness_scores = []
+    x = len(p)
+
+    for index in range(0, x):
+        fitness_scores.append(find_fitness(p[index], n))
+
+    return fitness_scores
+
+
+def cross_over(x, y):
+    n = len(x)
+
+    crossover_point = random.randrange(n)
+
+    list_1 = x[0:crossover_point + 1]
+    list_2 = y[crossover_point + 1:n]
+
+    child_individual = np.concatenate([list_1, list_2])
+
+    return child_individual
+
+
+def select(p, fit):
+    prob = []
+    x = sum(fit)
+    for s in fit:
+        prob.append(s / x)
+    v = []
+    for i in range(0, len(p)):
+        v.append(i)
+    u = random.choices(v, k=1, weights=prob)[0]
+    r = p[u]
+    return r
+
+
+def compute_goal_fit(x):
+    goal_fit = 0
+    for i in range(x):
+        goal_fit = goal_fit + i
+    return goal_fit
+
+
+def reproduce(x):
+    return switch(3, x)
+
+
+def switch(j, target):
+    for i in range(j):
+        j = random.randint(0, len(target) - 1)
+        k = random.randint(0, len(target) - 1)
+        target[j], target[k] = target[k], target[j]
+    return target
+
+
+def mutate(child):
+    n = len(child)
+    i = random.randrange(n)
+    j = random.randrange(n)
+    child[i] = j
+
+    return child
+
+
+def gen_algo(population, n, mutation=1.8):
+    limit = 1000000
+    m = (n * (n - 1)) // 2
+
+    count = limit
+
+    print("Goal fitness for current population is:", m)
+    print("Population dimension is:", n, "x", n)
+    print("Population size is:", len(population))
+    print("Search limit is: ", limit)
+    print("max generation is: ", n)
+    print("it will not take long...")
+
+    while count > 0:
+        fitness_scores = fitness(population, n)
+
+        new_population = []
+        var = len(population)
+        for i in range(0, var):
+
+            x = select(population, fitness_scores)
+            y = select(population, fitness_scores)
+            child = cross_over(x, y)
+
+            if random.uniform(0, 1) < mutation:
+                child = mutate(child)
+
+            if find_fitness(child, n) == m:
+                print("yey!! it's Done")
+                print(f'Result is {child} which found in {limit - count} generation.')
+                return child
+
+            new_population.append(child)
+
+        population = np.copy(new_population)
+        count = count - 1
+
+    print("No solutions found in", limit, "generations")
+    print("Please try again!")
+
+    return None
+
+
+mutation_threshold = 1.8
+population_call = np.random.randint(0, num_input, (population_input, num_input))
+result = gen_algo(population_call, num_input, mutation_threshold)
