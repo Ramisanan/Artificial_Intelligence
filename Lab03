@@ -1,0 +1,83 @@
+# CSE422
+import math
+import numpy as np
+
+
+def print_hi(lab):
+    print(f'Hi, {lab}')
+
+
+if __name__ == '__main__':
+    print_hi('Lab3')
+
+
+def minimax_ab(position, var, index, value, alpha, beta, maximize):
+    if var == depth:
+        x = value[position]
+        y = index + 1
+        return x, y
+
+    if maximize:
+        max_i = - math.inf
+        for i in range(0, branch):
+            i, index = minimax_ab(position * 2 + i, var + 1, index, value, alpha, beta, False)
+            max_i = max(max_i, i)
+            alpha = max(alpha, max_i)
+            if alpha >= beta:
+                index = index - 1
+                break
+        return max_i, index
+    else:
+        min_i = math.inf
+        for i in range(0, branch):
+            i, index = minimax_ab(position * 2 + i, var + 1, index, value, alpha, beta, True, )
+            min_i = min(min_i, i)
+            beta = min(beta, min_i)
+            if alpha >= beta:
+                index = index - 1
+                break
+        return min_i, index
+
+
+def minimax(position, var, index, value, maximize):
+    if var == depth:
+        x = value[position]
+        y = index + 1
+        return x, y
+    if maximize:
+        max_i = -math.inf
+        for i in range(0, branch):
+            i, index = minimax(position * 2 + i, var + 1, index, value, False)
+            max_i = max(max_i, i)
+        return max_i, index
+    else:
+        min_i = math.inf
+        for i in range(0, branch):
+            i, index = minimax(position * 2 + i, var + 1, index, value, True)
+            min_i = min(min_i, i)
+        return min_i, index
+
+
+if __name__ == "__main__":
+    turns = int(input("Number of turns for Riyadh: "))
+    depth = 2 * turns
+
+    branch = int(input("Number of notes from which the choice has to be made at certain time: "))
+    a = input("Minimum value for the range of notes: ")
+    b = input("Maximum value for the range of notes: ")
+
+    values = np.random.randint(low=a, high=b, size=branch ** depth)
+    amount, ab_count = minimax_ab(0, 0, 0, values, -math.inf, math.inf, True)
+    xy, xy_count = minimax(0, 0, 0, values, True)
+
+    print("Depth:", depth)
+    print("Branch: ", branch)
+
+    node = branch ** depth
+    print("Terminal States:", node)
+    # Maximum amount collected by Riyadh
+    print("Maximum amount:", amount)
+    # Before Alpha-beta Pruning
+    print("Comparisons:", xy_count)
+    # After Alpha-beta Pruning
+    print("Comparisons:", ab_count)
