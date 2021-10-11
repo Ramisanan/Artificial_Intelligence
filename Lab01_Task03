@@ -1,0 +1,51 @@
+# CSE422
+def bfs(self, data):
+
+    queue = [ ]
+
+    queue.insert(len(queue), data)
+    variable = [False] * int(x[0])
+    variable[data] = True
+    f1 = [" "] * int(x[0])
+
+    while queue:
+        paths = queue.pop()
+
+        for count in self[paths]:
+            if not variable[count]:
+                queue.insert(len(queue), count)
+                variable[count] = True
+                f1[count] = paths
+
+    return f1
+
+
+def shortest_path(f2, target, data):
+    shortcuts = [target]
+    nodes = f2[target]
+    while data != nodes:
+        shortcuts.insert(len(shortcuts), nodes)
+        nodes = f2[nodes]
+
+    return shortcuts
+
+
+with open('level3.txt') as f:
+    x = [y.rstrip() for y in f]
+
+total_vertex = int(x[0])
+graph = int(x[1]) + 2
+var = [[ ] for i in range(total_vertex)]
+
+for i in range(2, graph):
+    u = int(x[i].split(" ")[0])
+    v = int(x[i].split(" ")[1])
+    var[v].append(u)
+
+following = (bfs(var, int(x[int(x[1]) + 2])))
+path = [ ]
+
+for i in range(graph + 2, int(x[graph + 1]) + (graph + 2)):
+    path.append(len(shortest_path(following, int(x[i]), int(x[graph]))))
+
+print(min(path))
