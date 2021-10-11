@@ -1,0 +1,76 @@
+# CSE422
+# importing necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+
+kn = KNeighborsClassifier()
+
+mushroom_classification = pd.read_csv("/Users/anan/Downloads/mushroom edibility classification dataset.csv")
+print(mushroom_classification.isnull().sum())  # return null values
+print("Initial stage", mushroom_classification.shape)
+encoder = LabelEncoder()
+
+# to see all column
+desired_width = 320
+pd.set_option('display.width', desired_width)
+np.set_printoptions(linewidth=desired_width)
+pd.set_option('display.max_column', 20)
+
+print(mushroom_classification.head(5))
+
+mushroom_classification = mushroom_classification.drop(['veil-type'], axis=1)  # axis 1 means drop column
+print("after dropping unnecessary column ", mushroom_classification.shape)
+
+# Handle missing values if needed
+print('shape of dataframe before dropping null values: ', mushroom_classification.shape)
+mushroom_classification = mushroom_classification.dropna(axis=0, subset=['cap-shape', 'cap-color'])
+print("shape after dropping null values", mushroom_classification.shape)
+print(mushroom_classification.isnull().sum())
+
+# encode
+print(mushroom_classification.info)
+print(mushroom_classification['class'].unique())
+print(mushroom_classification['bruises'].unique())
+
+enc = LabelEncoder()
+mushroom_classification['class'] = enc.fit_transform(mushroom_classification['class'])
+mushroom_classification['bruises'] = enc.fit_transform(mushroom_classification['bruises'])
+
+print(mushroom_classification[['class']].head)
+print(mushroom_classification[['bruises']].head)
+
+print(mushroom_classification.head(5))
+
+mushroom_classification_cor = mushroom_classification.corr()
+print(mushroom_classification_cor)
+
+mushroom_classification_cor = mushroom_classification.corr()
+print(mushroom_classification_cor)
+mushroom_classification = mushroom_classification.drop(['cap-shape', 'cap-surface', 'cap-color', 'bruises', 'odor', 'veil-color', 'stalk-shape', 'stalk-root', 'ring-number', 'ring-type', 'habitat', 'spore-print-color'], axis=1)
+mushroom_classification_cor = mushroom_classification.corr()
+print(mushroom_classification_cor)
+
+print(mushroom_classification.head(5))
+
+
+an = pd.DataFrame(mushroom_classification['class'])
+x_train, x_test, y_train, y_test = train_test_split(mushroom_classification, mushroom_classification['class'], test_size=0.25, random_state=0, stratify=an)
+
+kn.fit(x_train, y_train)
+
+print("The accuracy without scaling: {:.2f}".format(kn.score(x_test, y_test)))
+
+scale = MinMaxScaler()
+scale.fit(x_train)
+x_train_scaled = scale.transform(x_train)
+x_test_scaled = scale.transform(x_test)
+
+print("per-feature minimum after scaling:\n {}".format(x_train_scaled.min(axis=0)))
+print("per-feature maximum after scaling:\n {}".format(x_train_scaled.max(axis=0)))
+
+kn.fit(x_train_scaled, y_train)
+print("Scaled test set accuracy: {:.2f}".format(kn.score(x_test_scaled, y_test)))
