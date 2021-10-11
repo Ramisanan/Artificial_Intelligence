@@ -1,0 +1,46 @@
+# CSE422
+def BFS(graph, initial, target):
+    nodes_explore = []
+
+    queue = [[initial]]
+
+    while queue:
+
+        path = queue.pop(0)
+        nodes = path[-1]
+
+        if nodes not in nodes_explore:
+            variables = graph[nodes]
+
+            for variable in variables:
+                new_path = list(path)
+                new_path.append(variable)
+                queue.append(new_path)
+
+                if variable == target:
+                    print("Minimum number of moves Nora needs to go to ‘x’ is", len(path))
+                    return
+                
+            nodes_explore.append(nodes)
+
+    print("There is no connection path")
+    return
+
+
+if __name__ == "__main__":
+    graphs = {'0': ['1', '2', '3'],
+              '1': ['3', '4'],
+              '2': ['3'],
+              '3': ['5', '6'],
+              '4': ['8', '7'],
+              '5': ['6'],
+              '6': ['7'],
+              '7': ['8']}
+
+    # sample input
+    # number of different fixed positions (including Nora’s one) is 9
+    # number of connections 13
+    # state of Nora is 0(initial state)
+    # state of Lina is 6(target state)
+
+    BFS(graphs, '0', '6')
